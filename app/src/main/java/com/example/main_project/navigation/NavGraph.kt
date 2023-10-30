@@ -15,6 +15,7 @@ import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.main_project.screens.CreationScreen
 import com.example.main_project.screens.HomeScreen
 import com.example.main_project.screens.StartScreen
 
@@ -51,7 +52,7 @@ fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel){
 
         }
         composable(route= EDIT_ROUTE) {
-
+            CreationScreen()
         }
 
     }

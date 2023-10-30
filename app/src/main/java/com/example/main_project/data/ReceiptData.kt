@@ -12,10 +12,18 @@ import kotlinx.serialization.json.Json
 @Serializable
 class MyConverters {
     @TypeConverter
-    fun listToJson(value: List<Receipt_step>?) = Json.encodeToString(value)
-
+    fun listToJson1(value: List<Receipt_step>?) = Json.encodeToString(value)
     @TypeConverter
-    fun jsonToList(value: String) = Json.decodeFromString<List<Receipt_step>>(value)
+    fun jsonToList1(value: String) = Json.decodeFromString<List<Receipt_step>>(value)
+    @TypeConverter
+    fun listToJson2(value: List<Receipt_image>?) = Json.encodeToString(value)
+    @TypeConverter
+    fun jsonToList2(value: String) = Json.decodeFromString<List<Receipt_image>>(value)
+    @TypeConverter
+    fun listToJson3(value: List<Receipt_ingredient>?) = Json.encodeToString(value)
+    @TypeConverter
+    fun jsonToList3(value: String) = Json.decodeFromString<List<Receipt_ingredient>>(value)
+
 }
 @Serializable
 @Entity(tableName="MainTable")
@@ -25,8 +33,8 @@ data class Receipt_data(
     val name : String,
     val description : String,
     val stepsList : List<Receipt_step>,
-    //val imageList : List<Receipt_image>,
-   // val ingredientsList : List<Receipt_ingredient>,
+    val imageList : List<Receipt_image>,
+    val ingredientsList : List<Receipt_ingredient>,
 )
 
 @Entity
@@ -43,7 +51,8 @@ data class Receipt_ingredient(
     @PrimaryKey
     val ingredientsId : Int,
     val name : String,
-    val amount : String
+    val amount : String,
+    val units : String
 )
 
 @Entity
@@ -52,8 +61,8 @@ data class Receipt_step(
     @PrimaryKey
     val stepId : Int,
     val name : String,
-   // val description : String,
-   // val image : String
+    val description : String,
+    val imagepath01 : String
 )
 
 

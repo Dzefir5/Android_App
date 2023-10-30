@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.main_project.data.Receipt_data
 import com.example.main_project.data.Receipt_step
+import com.example.main_project.navigation.EDIT_ROUTE
 import com.example.main_project.screens.composable_elements.BackGround
 import com.example.main_project.screens.composable_elements.myshadow
 import com.example.main_project.screens.composable_elements.receiptCard
@@ -58,12 +59,12 @@ import com.example.main_project.screens.composable_elements.receiptCard
 
 
 fun HomeScreen(navController: NavHostController,viewModel:MainViewModel){
-   viewModel.addNote(Receipt_data(
+ /*  viewModel.addNote(Receipt_data(
        receiptId = 1,
        name = "FOOD",
        description = "ITS FOOD",
        stepsList= listOf( Receipt_step(1,"STEP1"),Receipt_step(2,"STEP2"))
-   ))
+   ))*/
     val state = remember{
         MutableTransitionState(false).apply{
             targetState = true
@@ -171,7 +172,7 @@ fun HomeScreen(navController: NavHostController,viewModel:MainViewModel){
                 .myshadow(MaterialTheme.colorScheme.primary, blurRadius = 25.dp, roundY = 200f, roundX =200f )
                 .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
             shape = CircleShape,
-            onClick = { /*TODO*/ },
+            onClick = {navController.navigate(EDIT_ROUTE) },
             elevation = FloatingActionButtonDefaults.elevation(
                 defaultElevation = 5.dp,
                 focusedElevation = 5.dp,

@@ -2,8 +2,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "1.8.10-1.0.9"
-    //kotlin("plugin.serialization") version "1.9.10"
-    kotlin("plugin.serialization") version embeddedKotlinVersion
+    kotlin("plugin.serialization") version "1.8.10"
+    //kotlin("plugin.serialization") version embeddedKotlinVersion
 }
 
 android {
@@ -55,7 +55,7 @@ android {
 dependencies {
 
     implementation ("com.google.code.gson:gson:2.8.7")
-
+    implementation ("org.jetbrains.kotlin:kotlin-stdlib:1.8.10")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 
     implementation("androidx.room:room-runtime:2.5.2")
