@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -38,6 +40,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +61,7 @@ import com.example.main_project.screens.composable_elements.receiptCard
 @Composable
 
 
-fun HomeScreen(navController: NavHostController,viewModel:MainViewModel){
+fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel){
  /*  viewModel.addNote(Receipt_data(
        receiptId = 1,
        name = "FOOD",
@@ -114,18 +117,24 @@ fun HomeScreen(navController: NavHostController,viewModel:MainViewModel){
             }
 
         }
-        /*LazyColumn(content = ){
-
-        }*/
-
-        Column {
-            Spacer(modifier = Modifier.height(3.dp))
-            receiptCard()
-            Spacer(modifier = Modifier.height(3.dp))
-            receiptCard()
-            Spacer(modifier = Modifier.height(3.dp))
-            receiptCard()
+        val list=ViewModel.getAllData.collectAsState(initial = emptyList<Receipt_data>())
+        LazyColumn(){
+            itemsIndexed(list.value, key = {index: Int, item: Receipt_data -> item.receiptId }){_,receipt->
+                receiptCard(receipt=receipt,ViewModel=ViewModel, navController = navController)
+            }
+            item(){
+                Spacer(modifier = Modifier.fillMaxWidth().height(60.dp))
+            }
         }
+        var a = Receipt_data()
+       /* Column {
+            Spacer(modifier = Modifier.height(3.dp))
+            receiptCard(a)
+            Spacer(modifier = Modifier.height(3.dp))
+            receiptCard(a)
+            Spacer(modifier = Modifier.height(3.dp))
+            receiptCard(a)
+        }*/
 
         Box(
             modifier = Modifier
@@ -169,10 +178,22 @@ fun HomeScreen(navController: NavHostController,viewModel:MainViewModel){
             modifier = Modifier
                 .size(120.dp)
                 .offset(x = 10.dp, y = 10.dp)
-                .myshadow(MaterialTheme.colorScheme.primary, blurRadius = 25.dp, roundY = 200f, roundX =200f )
+                .myshadow(
+                    MaterialTheme.colorScheme.primary,
+                    blurRadius = 25.dp,
+                    roundY = 200f,
+                    roundX = 200f
+                )
                 .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
             shape = CircleShape,
-            onClick = {navController.navigate(EDIT_ROUTE) },
+            onClick = {
+                navController.navigate(EDIT_ROUTE)
+                ViewModel.EditedReceipt= Receipt_data()
+                ViewModel.stepsAmount=0
+                ViewModel.ingredientAmount=0
+                ViewModel.status=Status.CREATING
+
+                      },
             elevation = FloatingActionButtonDefaults.elevation(
                 defaultElevation = 5.dp,
                 focusedElevation = 5.dp,

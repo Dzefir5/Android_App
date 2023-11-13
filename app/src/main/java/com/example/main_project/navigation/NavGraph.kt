@@ -1,6 +1,7 @@
 package com.example.main_project.navigation
 
 import MainViewModel
+import android.content.Context
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -21,7 +22,7 @@ import com.example.main_project.screens.StartScreen
 
 @ExperimentalMaterial3Api
 @Composable
-fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel){
+fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel,incontext : Context){
     NavHost(
         navController=navController,
         startDestination = START_ROUTE
@@ -29,8 +30,8 @@ fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel){
         composable(
             route= START_ROUTE,
             exitTransition ={
-                fadeOut(animationSpec = tween(500))+
-                slideOutVertically (animationSpec = tween(500), targetOffsetY = {it})
+                fadeOut(animationSpec = tween(1000))+
+                        slideOutVertically (animationSpec = tween(1000), targetOffsetY = {it})
             }
         ) {
             StartScreen(navController,viewModel)
@@ -38,21 +39,33 @@ fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel){
         composable(
             route= HOME_ROUTE,
             enterTransition ={
-                fadeIn(animationSpec = tween(500))+
-                slideInVertically (animationSpec = tween(500), initialOffsetY = {it})
+                fadeIn(animationSpec = tween(1000))+
+                slideInVertically (animationSpec = tween(1000), initialOffsetY = {it})
             },
             exitTransition ={
-                fadeOut(animationSpec = tween(500))+
-                slideOutVertically (animationSpec = tween(500), targetOffsetY = {it})
+                fadeOut(animationSpec = tween(1000))+
+                slideOutVertically (animationSpec = tween(1000), targetOffsetY = {it})
             }
         ) {
             HomeScreen(navController,viewModel)
         }
-        composable(route= CHOOSE_ROUTE) {
+        composable(
+            route= CHOOSE_ROUTE
+        ) {
 
         }
-        composable(route= EDIT_ROUTE) {
-            CreationScreen()
+        composable(
+            route= EDIT_ROUTE,
+            enterTransition ={
+                fadeIn(animationSpec = tween(1000))+
+                        slideInVertically (animationSpec = tween(1000), initialOffsetY = {it})
+            },
+            exitTransition ={
+                fadeOut(animationSpec = tween(1000))+
+                        slideOutVertically (animationSpec = tween(1000), targetOffsetY = {it})
+            }
+        ) {
+            CreationScreen(navController,viewModel,incontext)
         }
 
     }

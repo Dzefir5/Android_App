@@ -1,6 +1,9 @@
 package com.example.main_project.data
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.room.Entity
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import androidx.room.TypeConverter
@@ -8,6 +11,7 @@ import com.google.gson.Gson
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.ByteArrayOutputStream
 
 @Serializable
 class MyConverters {
@@ -24,45 +28,68 @@ class MyConverters {
     @TypeConverter
     fun jsonToList3(value: String) = Json.decodeFromString<List<Receipt_ingredient>>(value)
 
+    @TypeConverter
+    fun listToMutList1(value: MutableList<Receipt_step>?) = value?.toList()
+    @TypeConverter
+    fun MutListTolist1(value: List<Receipt_step>?) =value?.toMutableList()
+    @TypeConverter
+    fun listToMutList2(value: MutableList<Receipt_image>?) = value?.toList()
+    @TypeConverter
+    fun MutListTolist2(value: List<Receipt_image>?) =value?.toMutableList()
+    @TypeConverter
+    fun listToMutList3(value: MutableList<Receipt_ingredient>?) = value?.toList()
+    @TypeConverter
+    fun MutListTolist3(value: List<Receipt_ingredient>?) =value?.toMutableList()
+
+    @TypeConverter
+    fun fromBitmap(bitmap: Bitmap):ByteArray{
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        return outputStream.toByteArray()
+    }
+    @TypeConverter
+    fun toBitmap(byteArray: ByteArray):Bitmap{
+        return BitmapFactory.decodeByteArray(byteArray,0, byteArray.size)
+    }
+
+
 }
 @Serializable
 @Entity(tableName="MainTable")
 data class Receipt_data(
-    @PrimaryKey
-    val receiptId : Int,
-    val name : String,
-    val description : String,
-    val stepsList : List<Receipt_step>,
-    val imageList : List<Receipt_image>,
-    val ingredientsList : List<Receipt_ingredient>,
+    @PrimaryKey(autoGenerate = true)
+    var receiptId : Int=0,
+    var name : String="",
+    var imageBmp : ByteArray =  byteArrayOf(0,1,0),
+    var description : String="",
+    var stepsList : MutableList<Receipt_step> = mutableListOf(),
+    var imageList : MutableList<Receipt_image> = mutableListOf(),
+    var ingredientsList : MutableList<Receipt_ingredient> = mutableListOf(),
 )
-
 @Entity
 @Serializable
 data class Receipt_image(
     @PrimaryKey
-    val imageId : Int,
-    val path : String
+    var imageId : Int=0,
+    //var imageBmp : ByteArray =  byteArrayOf()
 )
-
-@Entity
 @Serializable
+@Entity
 data class Receipt_ingredient(
     @PrimaryKey
-    val ingredientsId : Int,
-    val name : String,
-    val amount : String,
-    val units : String
+    var ingredientsId : Int=0,
+    var name : String="",
+    var amount : String="",
+    var units : String=""
 )
-
-@Entity
 @Serializable
+@Entity
 data class Receipt_step(
     @PrimaryKey
-    val stepId : Int,
-    val name : String,
-    val description : String,
-    val imagepath01 : String
+    var stepId : Int=0,
+    var name : String="",
+    var description : String="",
+    var image : ByteArray =  byteArrayOf(0,1,0)
 )
 
 

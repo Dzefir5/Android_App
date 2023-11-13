@@ -36,13 +36,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
             //saveImageToInternalStorage("MyTestFile",Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888))
             val mainViewModel= ViewModelProvider(this).get(MainViewModel::class.java)
             this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             MainTheme {
                 val NavController = rememberNavController()
-                NavigationGraph(NavController,mainViewModel)
+                NavigationGraph(NavController,mainViewModel, LocalContext.current)
                // CreationScreen()
             }
             //this.setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
