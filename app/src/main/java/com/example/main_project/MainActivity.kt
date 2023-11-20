@@ -1,6 +1,7 @@
 package com.example.main_project
 
 import MainViewModel
+import ad
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
@@ -22,12 +23,16 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.main_project.data.Receipt_data
 import com.example.main_project.navigation.NavigationGraph
 import com.example.main_project.screens.CreationScreen
 import com.example.main_project.screens.HomeScreen
 import com.example.main_project.screens.StartScreen
 import com.example.main_project.ui.theme.MainTheme
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import java.io.IOException
+import java.util.Base64
 
 
 class MainActivity : ComponentActivity() {
@@ -38,6 +43,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             //saveImageToInternalStorage("MyTestFile",Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888))
             val mainViewModel= ViewModelProvider(this).get(MainViewModel::class.java)
+            //var remoteDatabase: DatabaseReference = FirebaseDatabase.getInstance().getReference()
+           // val byteArray= byteArrayOf(0,1,2)
+            //val ByteEnc:String = Base64.getEncoder().encodeToString(byteArray)
+            //remoteDatabase.child("002").setValue(ByteEnc)
             this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             MainTheme {
                 val NavController = rememberNavController()

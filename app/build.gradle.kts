@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "1.8.10-1.0.9"
     kotlin("plugin.serialization") version "1.8.10"
+    id("com.google.gms.google-services")
     //kotlin("plugin.serialization") version embeddedKotlinVersion
 }
 
@@ -12,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.main_project"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -62,6 +63,8 @@ dependencies {
 
     implementation("androidx.room:room-runtime:2.5.2")
     implementation("androidx.room:room-ktx:2.5.2")
+    implementation("com.google.firebase:firebase-auth:22.3.0")
+    implementation("com.google.firebase:firebase-database:20.3.0")
     ksp("androidx.room:room-compiler:2.5.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0")
 

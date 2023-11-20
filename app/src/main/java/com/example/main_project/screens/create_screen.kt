@@ -2,24 +2,22 @@ package com.example.main_project.screens
 
 import MainViewModel
 import Status
-import android.app.WallpaperColors.fromBitmap
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,24 +31,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -60,7 +53,6 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -77,16 +69,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
-import androidx.room.util.copy
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.main_project.R
@@ -103,6 +91,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
+import java.nio.charset.StandardCharsets.UTF_8
+import java.util.Base64
 
 fun fromBmp(bitmap: Bitmap):ByteArray{
     val outputStream = ByteArrayOutputStream()
@@ -115,8 +105,14 @@ fun toBmp(byteArray: ByteArray):Bitmap{
 
 fun compressBmp(bmp:Bitmap):ByteArray{
     val outputStream = ByteArrayOutputStream()
-    bmp.compress(Bitmap.CompressFormat.JPEG,50,outputStream)
+    bmp.compress(Bitmap.CompressFormat.JPEG,100,outputStream)
     return outputStream.toByteArray()
+}
+fun scaleBitmap(bmp:Bitmap,maxHeight:Int ,maxWidth :Int ):Bitmap{
+    var inputHeight = bmp.height
+    var inputWidth=bmp.width
+    var scale : Float = maxHeight.toFloat()/inputHeight.toFloat()
+    return Bitmap.createScaledBitmap(bmp,(inputWidth*scale).toInt(),(inputHeight*scale).toInt(),true)
 }
 
 //@Preview
@@ -134,7 +130,7 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
             mutableStateOf(toBmp(ViewModel.EditedReceipt.imageBmp))
             //mutableStateOf(R.drawable.dish_icon)
         }else{
-            mutableStateOf(R.drawable.dish_icon)
+            mutableStateOf(R.drawable.image_placeholder)
         }
 
     }
@@ -142,15 +138,16 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
         if (uri != null) {
             MainImageUri=uri
             val byteArray=context.contentResolver.openInputStream(MainImageUri.toString().toUri())!!.use { it.readBytes() }
-            val bmp = BitmapFactory.decodeByteArray(byteArray,0,byteArray.size)
+            var bmp = BitmapFactory.decodeByteArray(byteArray,0,byteArray.size)
+            bmp=scaleBitmap(bmp,720,960)
+            ViewModel.EditedReceipt.imageBmp=compressBmp(bmp)
 
-            ViewModel.EditedReceipt.imageBmp= compressBmp(bmp)
            // Log.d("PhotoPicker", "Selected URI: $uri")
         } else {
            // Log.d("PhotoPicker", "No media selected")
         }
     }
-    //BackGround
+                    //BackGround
     BackGround()
     Box(
         modifier = Modifier.fillMaxSize()
@@ -288,7 +285,7 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                         .crossfade(true)
                         .build(),
                     contentDescription = "Main_Image",
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
                 )
             }
         }
@@ -597,22 +594,28 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                     .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
                 shape = CircleShape,
                 onClick = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if(ViewModel.status==Status.EDITING)ViewModel.updateReceipt(ViewModel.EditedReceipt)
-                        if(ViewModel.status==Status.CREATING)ViewModel.addReceipt(ViewModel.EditedReceipt)
-                        delay(1000)
-                        if(ViewModel.status!=Status.WATCHING)ViewModel.EditedReceipt = Receipt_data()
-                    }
-                    if(ViewModel.status!=Status.WATCHING) {
+                    //ViewModel.EditedReceipt = receipt
+
+                    if(ViewModel.status!=Status.WATCHING){
+                        CoroutineScope(Dispatchers.IO).launch {
+                            if(ViewModel.status==Status.EDITING)ViewModel.updateReceipt(ViewModel.EditedReceipt)
+                            if(ViewModel.status==Status.CREATING){
+                                ViewModel.addReceipt(ViewModel.EditedReceipt)
+                                //ViewModel.remoteRepository.insertData(ViewModel.EditedReceipt)
+                            }
+                            delay(1000)
+                            if(ViewModel.status!=Status.WATCHING)ViewModel.EditedReceipt = Receipt_data()
+                        }
                         navController.navigate(HOME_ROUTE) {
                             popUpTo(HOME_ROUTE) {
                                 inclusive = true
                             }
                         }
                     }else{
-                        navController.navigate(EDIT_ROUTE)
                         ViewModel.status = Status.EDITING
+                        navController.navigate(EDIT_ROUTE)
                     }
+
 
 
                 },
@@ -649,10 +652,10 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
 
     var ImageUri:Any? by  remember {
         if(ViewModel.EditedReceipt.stepsList[number].image.size>10){
-            mutableStateOf(toBmp(ViewModel.EditedReceipt.imageBmp))
+            mutableStateOf(toBmp( ViewModel.EditedReceipt.stepsList[number].image))
             //mutableStateOf(R.drawable.dish_icon)
         }else{
-            mutableStateOf(R.drawable.dish_icon)
+            mutableStateOf(R.drawable.image_placeholder)
         }
 
     }
@@ -660,7 +663,8 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
         if (uri != null) {
             ImageUri=uri
             val byteArray=context.contentResolver.openInputStream(ImageUri.toString().toUri())!!.use { it.readBytes() }
-            val bmp = BitmapFactory.decodeByteArray(byteArray,0,byteArray.size)
+            var bmp = BitmapFactory.decodeByteArray(byteArray,0,byteArray.size)
+            bmp= scaleBitmap(bmp,480,640)
             ViewModel.EditedReceipt.stepsList[number].image= compressBmp(bmp)
             // Log.d("PhotoPicker", "Selected URI: $uri")
         } else {
@@ -672,8 +676,8 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
 
     AnimatedVisibility(
         visibleState = animationState,
-        enter = slideInHorizontally(animationSpec = tween(1000), initialOffsetX = {-it}),
-        exit = slideOutHorizontally(animationSpec = tween(1000),targetOffsetX = {+it}),
+        enter = expandVertically(animationSpec = tween(1000), expandFrom = Alignment.Top, initialHeight = {-it}),
+        exit = shrinkVertically(animationSpec = tween(1000), shrinkTowards = Alignment.Top, targetHeight = {-it}),
     ) {
         Card(
             modifier = Modifier

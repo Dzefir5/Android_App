@@ -9,6 +9,4 @@ interface Repository{
 
     suspend fun updateData(receiptData:Receipt_data)
 
-    fun getAll(): Flow<List<Receipt_data>>
-
 }

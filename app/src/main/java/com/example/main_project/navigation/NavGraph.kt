@@ -57,12 +57,12 @@ fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel,inc
         composable(
             route= EDIT_ROUTE,
             enterTransition ={
-                fadeIn(animationSpec = tween(1000))+
-                        slideInVertically (animationSpec = tween(1000), initialOffsetY = {it})
+                fadeIn(animationSpec = tween(1500))+
+                        slideInVertically (animationSpec = tween(1500), initialOffsetY = {it})
             },
             exitTransition ={
-                fadeOut(animationSpec = tween(1000))+
-                        slideOutVertically (animationSpec = tween(1000), targetOffsetY = {it})
+                fadeOut(animationSpec = tween(1500))+
+                        slideOutVertically (animationSpec = tween(1500), targetOffsetY = {it})
             }
         ) {
             CreationScreen(navController,viewModel,incontext)

@@ -5,8 +5,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -54,6 +56,7 @@ import com.example.main_project.ui.theme.LexendFont
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 
 //@Preview
@@ -61,15 +64,16 @@ import kotlinx.coroutines.launch
 
 fun receiptCard(ViewModel:MainViewModel, receipt:Receipt_data,navController: NavController) {
     val animationState = remember {
-        MutableTransitionState(false).apply {
+        MutableTransitionState(true).apply {
             targetState= true
         }
     }
     AnimatedVisibility(
         visibleState = animationState,
-        enter = slideInHorizontally(animationSpec = tween(1000), initialOffsetX = {-it}),
-        exit = slideOutHorizontally(animationSpec = tween(1000),targetOffsetX = {+it}),
-    ) {
+        enter = expandVertically(animationSpec = tween(1000), expandFrom = Alignment.Top, initialHeight = {-it}),
+        exit = shrinkVertically(animationSpec = tween(1000), shrinkTowards = Alignment.Top, targetHeight = {-it}),
+
+        ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -88,21 +92,30 @@ fun receiptCard(ViewModel:MainViewModel, receipt:Receipt_data,navController: Nav
                 .fillMaxWidth()
                 .fillMaxHeight(0.75f)
         ) {
-            AsyncImage(
+            Card(
                 modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(0.7f)
-                .padding(start = 8.dp, end = 2.dp, top = 8.dp, bottom = 8.dp)
-                .clip(shape = RoundedCornerShape(25.dp)),
-                contentDescription = "",
-                contentScale = ContentScale.Crop,
-                model =  //R.drawable.dish_icon
-                if(receipt.imageBmp.size>10){
-                    receipt.imageBmp
-                }else{
-                    R.drawable.dish_icon
-                }
-            )
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.7f)
+                    .padding(start = 8.dp, end = 2.dp, top = 8.dp, bottom = 8.dp) ,
+                shape = RoundedCornerShape(25.dp),
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary)
+            ){
+                AsyncImage(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                        .clip(shape = RoundedCornerShape(25.dp)),
+                    contentDescription = "",
+                    contentScale = ContentScale.Crop,
+                    model =  //R.drawable.dish_icon
+                    if(receipt.imageBmp.size>5){
+                        receipt.imageBmp
+                    }else{
+                        R.drawable.image_placeholder
+                    }
+                )
+            }
+
             /*Image(
                 modifier = Modifier
                     .fillMaxHeight()

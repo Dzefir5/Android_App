@@ -25,7 +25,7 @@ abstract class MainDataBase: RoomDatabase() {
                 Room.databaseBuilder(
                     context ,
                     MainDataBase::class.java,
-                    "test_database"
+                    "database"
                 ).build().also { Instance= it }
             }
 

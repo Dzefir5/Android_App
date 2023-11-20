@@ -21,6 +21,9 @@ interface DataDao {
     suspend fun UpdateData(receiptData:Receipt_data)
 
 
-    @Query("SELECT * FROM MainTable ORDER BY receiptId ASC")
+    @Query("SELECT * FROM Main_Table ORDER BY receiptId ASC")
     fun getAllData(): Flow<List<Receipt_data>>
+
+    @Query("SELECT * FROM Main_Table WHERE name LIKE '%'|| :search || '%' ORDER BY receiptId ASC")
+    fun getByName(search:String): Flow<List<Receipt_data>>
 }
