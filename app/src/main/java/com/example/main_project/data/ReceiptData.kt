@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayOutputStream
+import java.sql.Blob
 import java.util.Base64
 
 @Serializable
@@ -51,17 +52,17 @@ class MyConverters {
 
 }
 @Serializable
-@Entity(tableName="Main_Table")
+@Entity(tableName="Main_Table_01")
 data class Receipt_data(
     @PrimaryKey(autoGenerate = true)
     var receiptId : Int=0,
     var name : String="",
-    @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
-    var imageBmp : ByteArray = byteArrayOf(0),
+    var imageBmp : String ="null",
     var description : String="",
     var stepsList : MutableList<Receipt_step> = mutableListOf(),
     var ingredientsList : MutableList<Receipt_ingredient> = mutableListOf(),
 )
+
 
 @Serializable
 @Entity
@@ -79,8 +80,7 @@ data class Receipt_step(
     var stepId : Int=0,
     var name : String="",
     var description : String="",
-    @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
-    var image : ByteArray = byteArrayOf(0)
+    var image : String="null"
 )
 
 

@@ -56,6 +56,7 @@ android {
 dependencies {
 
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil:2.5.0")
 
     implementation ("com.google.code.gson:gson:2.8.7")
     implementation ("org.jetbrains.kotlin:kotlin-stdlib:1.8.10")
@@ -63,9 +64,14 @@ dependencies {
 
     implementation("androidx.room:room-runtime:2.5.2")
     implementation("androidx.room:room-ktx:2.5.2")
+    ksp("androidx.room:room-compiler:2.5.2")
+
     implementation("com.google.firebase:firebase-auth:22.3.0")
     implementation("com.google.firebase:firebase-database:20.3.0")
-    ksp("androidx.room:room-compiler:2.5.2")
+    implementation("com.google.firebase:firebase-firestore-ktx:24.9.1")
+    implementation("com.google.firebase:firebase-storage")
+    implementation(platform("com.google.firebase:firebase-bom:32.6.0"))
+
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0")
 
     implementation("androidx.compose.material:material:1.5.3")

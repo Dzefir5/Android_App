@@ -81,8 +81,10 @@ import com.example.main_project.R
 import com.example.main_project.data.Receipt_data
 import com.example.main_project.data.Receipt_ingredient
 import com.example.main_project.data.Receipt_step
+import com.example.main_project.loadFromInternalStorage
 import com.example.main_project.navigation.EDIT_ROUTE
 import com.example.main_project.navigation.HOME_ROUTE
+import com.example.main_project.saveImageToInternalStorage
 import com.example.main_project.screens.composable_elements.BackGround
 import com.example.main_project.screens.composable_elements.myshadow
 import com.example.main_project.ui.theme.LexendFont
@@ -91,8 +93,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
-import java.nio.charset.StandardCharsets.UTF_8
-import java.util.Base64
+import java.util.UUID
 
 fun fromBmp(bitmap: Bitmap):ByteArray{
     val outputStream = ByteArrayOutputStream()
@@ -119,32 +120,37 @@ fun scaleBitmap(bmp:Bitmap,maxHeight:Int ,maxWidth :Int ):Bitmap{
 @Composable
 @ExperimentalMaterial3Api
 fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:Context){
+
     var status by remember {
         mutableStateOf(ViewModel.status)
     }
+
     ViewModel.ingredientAmount=ViewModel.EditedReceipt.ingredientsList.size
     ViewModel.stepsAmount=ViewModel.EditedReceipt.stepsList.size
+    var preload :ByteArray = byteArrayOf(0)
+    if( ViewModel.EditedReceipt.imageBmp!="null"){
+        preload=loadFromInternalStorage(ViewModel.EditedReceipt.imageBmp,context)
+    }
 
     var MainImageUri:Any? by  remember {
-        if(ViewModel.EditedReceipt.imageBmp.size>10){
-            mutableStateOf(toBmp(ViewModel.EditedReceipt.imageBmp))
-            //mutableStateOf(R.drawable.dish_icon)
+        if(ViewModel.EditedReceipt.imageBmp!="null"){
+            mutableStateOf(preload)
         }else{
-            mutableStateOf(R.drawable.image_placeholder)
+            mutableStateOf(R.drawable.image_placeholder_01)
         }
-
     }
+
     val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             MainImageUri=uri
             val byteArray=context.contentResolver.openInputStream(MainImageUri.toString().toUri())!!.use { it.readBytes() }
             var bmp = BitmapFactory.decodeByteArray(byteArray,0,byteArray.size)
             bmp=scaleBitmap(bmp,720,960)
-            ViewModel.EditedReceipt.imageBmp=compressBmp(bmp)
-
-           // Log.d("PhotoPicker", "Selected URI: $uri")
+            val path:String= UUID.randomUUID().toString()
+            saveImageToInternalStorage(path,bmp,context)
+            ViewModel.EditedReceipt.imageBmp=path
         } else {
-           // Log.d("PhotoPicker", "No media selected")
+                ////
         }
     }
                     //BackGround
@@ -594,17 +600,16 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                     .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
                 shape = CircleShape,
                 onClick = {
-                    //ViewModel.EditedReceipt = receipt
 
                     if(ViewModel.status!=Status.WATCHING){
                         CoroutineScope(Dispatchers.IO).launch {
                             if(ViewModel.status==Status.EDITING)ViewModel.updateReceipt(ViewModel.EditedReceipt)
                             if(ViewModel.status==Status.CREATING){
                                 ViewModel.addReceipt(ViewModel.EditedReceipt)
-                                //ViewModel.remoteRepository.insertData(ViewModel.EditedReceipt)
+                                ViewModel.remoteRepository.insertData(ViewModel.EditedReceipt,context)
                             }
                             delay(1000)
-                            if(ViewModel.status!=Status.WATCHING)ViewModel.EditedReceipt = Receipt_data()
+                           ViewModel.EditedReceipt = Receipt_data()
                         }
                         navController.navigate(HOME_ROUTE) {
                             popUpTo(HOME_ROUTE) {
@@ -650,12 +655,19 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
         }
     }
 
+    var preload :ByteArray
+    if( ViewModel.EditedReceipt.stepsList[number].image!="null"){
+        preload=loadFromInternalStorage(ViewModel.EditedReceipt.stepsList[number].image,context)
+    }else{
+        preload= byteArrayOf()
+    }
+
     var ImageUri:Any? by  remember {
-        if(ViewModel.EditedReceipt.stepsList[number].image.size>10){
-            mutableStateOf(toBmp( ViewModel.EditedReceipt.stepsList[number].image))
+        if(ViewModel.EditedReceipt.stepsList[number].image!="null"){
+            mutableStateOf(preload)
             //mutableStateOf(R.drawable.dish_icon)
         }else{
-            mutableStateOf(R.drawable.image_placeholder)
+            mutableStateOf(R.drawable.image_placeholder_01)
         }
 
     }
@@ -665,7 +677,9 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
             val byteArray=context.contentResolver.openInputStream(ImageUri.toString().toUri())!!.use { it.readBytes() }
             var bmp = BitmapFactory.decodeByteArray(byteArray,0,byteArray.size)
             bmp= scaleBitmap(bmp,480,640)
-            ViewModel.EditedReceipt.stepsList[number].image= compressBmp(bmp)
+            val path:String= UUID.randomUUID().toString()
+            saveImageToInternalStorage(path,bmp,context)
+            ViewModel.EditedReceipt.stepsList[number].image= path
             // Log.d("PhotoPicker", "Selected URI: $uri")
         } else {
             // Log.d("PhotoPicker", "No media selected")

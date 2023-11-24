@@ -47,7 +47,7 @@ fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel,inc
                 slideOutVertically (animationSpec = tween(1000), targetOffsetY = {it})
             }
         ) {
-            HomeScreen(navController,viewModel)
+            HomeScreen(navController,viewModel,incontext)
         }
         composable(
             route= CHOOSE_ROUTE

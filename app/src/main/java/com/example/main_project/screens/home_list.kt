@@ -1,6 +1,7 @@
 package com.example.main_project.screens
 
 import MainViewModel
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
@@ -70,28 +71,22 @@ import com.example.main_project.screens.composable_elements.myshadow
 import com.example.main_project.screens.composable_elements.receiptCard
 import com.example.main_project.ui.theme.LexendFont
 
-//@Preview
 @Composable
 @ExperimentalMaterial3Api
 
-fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel){
-    val state = remember{
-        MutableTransitionState(false).apply{
-            targetState = true
-        }
-    }
+fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel,context: Context){
     val list=ViewModel.getAllData.collectAsState(initial = emptyList<Receipt_data>())
 
     BackGround()
     Column(
-
     ){
         Card(
             modifier = Modifier
                 .height(60.dp)
                 .fillMaxWidth()
                 .align(alignment = Alignment.CenterHorizontally),
-            shape = RoundedCornerShape(0.dp,0.dp,20.dp,20.dp)
+            shape = RoundedCornerShape(0.dp,0.dp,20.dp,20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         ){
             Row(
                 modifier = Modifier.fillMaxSize() ,
@@ -105,7 +100,6 @@ fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel){
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                 ) {
-                   // TextField(value = , onValueChange = )
                     BasicTextField(modifier = Modifier.fillMaxSize(),
                         value= ViewModel.searchString,
                         onValueChange ={
@@ -171,10 +165,16 @@ fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel){
         LazyColumn(){
             itemsIndexed(list.value, key = {index: Int, item: Receipt_data -> item.receiptId }){_,receipt->
                 if(receipt.name.lowercase().contains(ViewModel.searchString.lowercase())){
-                    receiptCard(receipt=receipt,ViewModel=ViewModel, navController = navController)
+                    receiptCard(receipt=receipt,ViewModel=ViewModel, navController = navController, context=context)
                 }
-
             }
+            item(){
+                Spacer(modifier = Modifier.fillMaxWidth().height(60.dp))
+            }
+            /*val remlist = ViewModel.remoteRepository.fetchData()
+            itemsIndexed(remlist){_,receipt->
+                    receiptCard(receipt=receipt,ViewModel=ViewModel, navController = navController, context=context)
+            }*/
             item(){
                 Spacer(modifier = Modifier.fillMaxWidth().height(60.dp))
             }
@@ -213,6 +213,8 @@ fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel){
 
             }
     }
+
+
     Column(modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.Bottom
