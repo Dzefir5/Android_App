@@ -15,6 +15,7 @@ import kotlinx.serialization.json.Json
 import java.io.ByteArrayOutputStream
 import java.sql.Blob
 import java.util.Base64
+import java.util.UUID
 
 @Serializable
 class MyConverters {
@@ -54,8 +55,8 @@ class MyConverters {
 @Serializable
 @Entity(tableName="Main_Table_01")
 data class Receipt_data(
-    @PrimaryKey(autoGenerate = true)
-    var receiptId : Int=0,
+    @PrimaryKey//(autoGenerate = true)
+    var receiptId : Int=(0..100000).random(),
     var name : String="",
     var imageBmp : String ="null",
     var description : String="",

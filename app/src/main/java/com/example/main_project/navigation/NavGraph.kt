@@ -47,7 +47,20 @@ fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel,inc
                 slideOutVertically (animationSpec = tween(1000), targetOffsetY = {it})
             }
         ) {
-            HomeScreen(navController,viewModel,incontext)
+            HomeScreen(navController,viewModel,incontext,false)
+        }
+        composable(
+            route= REMOTE_ROUTE,
+            enterTransition ={
+                fadeIn(animationSpec = tween(1000))+
+                        slideInVertically (animationSpec = tween(1000), initialOffsetY = {it})
+            },
+            exitTransition ={
+                fadeOut(animationSpec = tween(1000))+
+                        slideOutVertically (animationSpec = tween(1000), targetOffsetY = {it})
+            }
+        ) {
+            HomeScreen(navController,viewModel,incontext,true)
         }
         composable(
             route= CHOOSE_ROUTE
@@ -65,8 +78,22 @@ fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel,inc
                         slideOutVertically (animationSpec = tween(1500), targetOffsetY = {it})
             }
         ) {
-            CreationScreen(navController,viewModel,incontext)
+            CreationScreen(navController,viewModel,incontext,false)
         }
+        composable(
+            route= REMOTE_EDIT_ROUTE,
+            enterTransition ={
+                fadeIn(animationSpec = tween(1500))+
+                        slideInVertically (animationSpec = tween(1500), initialOffsetY = {it})
+            },
+            exitTransition ={
+                fadeOut(animationSpec = tween(1500))+
+                        slideOutVertically (animationSpec = tween(1500), targetOffsetY = {it})
+            }
+        ) {
+            CreationScreen(navController,viewModel,incontext,true)
+        }
+
 
     }
 

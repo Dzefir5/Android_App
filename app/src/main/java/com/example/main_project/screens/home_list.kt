@@ -74,8 +74,9 @@ import com.example.main_project.ui.theme.LexendFont
 @Composable
 @ExperimentalMaterial3Api
 
-fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel,context: Context){
-    val list=ViewModel.getAllData.collectAsState(initial = emptyList<Receipt_data>())
+fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel,context: Context,remote : Boolean){
+    val list=ViewModel.repository.getSearch(ViewModel.searchString).collectAsState(initial = emptyList<Receipt_data>())
+    val remoteList= ViewModel.remoteRepository.fetchAllData().collectAsState(initial = emptyList<Receipt_data>())
 
     BackGround()
     Column(
@@ -83,6 +84,7 @@ fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel,context:
         Card(
             modifier = Modifier
                 .height(60.dp)
+               // .shadow(5.dp, spotColor = Color.Black,shape =RoundedCornerShape(0.dp,0.dp,20.dp,20.dp) )
                 .fillMaxWidth()
                 .align(alignment = Alignment.CenterHorizontally),
             shape = RoundedCornerShape(0.dp,0.dp,20.dp,20.dp),
@@ -103,9 +105,8 @@ fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel,context:
                     BasicTextField(modifier = Modifier.fillMaxSize(),
                         value= ViewModel.searchString,
                         onValueChange ={
-                            ViewModel.getSearchData = ViewModel.repository.getSearch(it)
+                            //ViewModel.getSearchData = ViewModel.repository.getSearch(it)
                             ViewModel.searchString = it
-
                         },
                         textStyle = TextStyle(
                             textAlign = TextAlign.Center,
@@ -163,20 +164,27 @@ fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel,context:
 
         }
         LazyColumn(){
-            itemsIndexed(list.value, key = {index: Int, item: Receipt_data -> item.receiptId }){_,receipt->
-                if(receipt.name.lowercase().contains(ViewModel.searchString.lowercase())){
-                    receiptCard(receipt=receipt,ViewModel=ViewModel, navController = navController, context=context)
+            item(){
+                Spacer(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(10.dp))
+            }
+            if(!remote){
+                itemsIndexed(list.value, key = {index: Int, item: Receipt_data -> item.receiptId }){_,receipt->
+                        receiptCard(receipt=receipt,ViewModel=ViewModel, navController = navController, context=context, remote = false)
+                }
+            }else{
+                itemsIndexed(remoteList.value, key = {index: Int, item: Receipt_data -> item.receiptId }){_,receipt->
+                    if(receipt.name.lowercase().contains(ViewModel.searchString.lowercase())) {
+                        receiptCard(receipt = receipt, ViewModel = ViewModel, navController = navController, context = context, remote = true
+                        )
+                    }
                 }
             }
             item(){
-                Spacer(modifier = Modifier.fillMaxWidth().height(60.dp))
-            }
-            /*val remlist = ViewModel.remoteRepository.fetchData()
-            itemsIndexed(remlist){_,receipt->
-                    receiptCard(receipt=receipt,ViewModel=ViewModel, navController = navController, context=context)
-            }*/
-            item(){
-                Spacer(modifier = Modifier.fillMaxWidth().height(60.dp))
+                Spacer(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp))
             }
         }
         Box(
@@ -214,45 +222,47 @@ fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel,context:
             }
     }
 
-
-    Column(modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        FloatingActionButton(
-            modifier = Modifier
-                .size(120.dp)
-                .offset(x = 10.dp, y = 10.dp)
-                .myshadow(
-                    MaterialTheme.colorScheme.primary,
-                    blurRadius = 25.dp,
-                    roundY = 200f,
-                    roundX = 200f
-                )
-                .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
-            shape = CircleShape,
-            onClick = {
-                navController.navigate(EDIT_ROUTE)
-                ViewModel.EditedReceipt= Receipt_data()
-                ViewModel.stepsAmount=0
-                ViewModel.ingredientAmount=0
-                ViewModel.status=Status.CREATING
-
-                      },
-            elevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 5.dp,
-                focusedElevation = 5.dp,
-                pressedElevation = 2.dp
-            )
+    if(!remote){
+        Column(modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.Bottom
         ) {
-            Icon(
-                modifier = Modifier.size(105.dp),
-                imageVector = Icons.Rounded.Add,
-                contentDescription = "add_icon",
-                tint = Color.White
-            )
+            FloatingActionButton(
+                modifier = Modifier
+                    .size(120.dp)
+                    .offset(x = 10.dp, y = 10.dp)
+                    .myshadow(
+                        MaterialTheme.colorScheme.primary,
+                        blurRadius = 25.dp,
+                        roundY = 200f,
+                        roundX = 200f
+                    )
+                    .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
+                shape = CircleShape,
+                onClick = {
+                    navController.navigate(EDIT_ROUTE)
+                    ViewModel.EditedReceipt= Receipt_data()
+                    ViewModel.stepsAmount=0
+                    ViewModel.ingredientAmount=0
+                    ViewModel.status=Status.CREATING
+
+                },
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 5.dp,
+                    focusedElevation = 5.dp,
+                    pressedElevation = 2.dp
+                )
+            ) {
+                Icon(
+                    modifier = Modifier.size(105.dp),
+                    imageVector = Icons.Rounded.Add,
+                    contentDescription = "add_icon",
+                    tint = Color.White
+                )
+            }
         }
     }
+
 
 
 

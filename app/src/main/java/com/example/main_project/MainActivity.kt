@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
+import com.example.main_project.data.Receipt_data
 import com.example.main_project.navigation.NavigationGraph
 import com.example.main_project.screens.fromBmp
 import com.example.main_project.ui.theme.MainTheme
@@ -23,6 +24,7 @@ import com.google.firebase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.lang.Exception
 
@@ -108,3 +110,4 @@ fun saveImageToInternalStorage(filename:String, bmp: Bitmap,context: Context):Bo
         false
     }
 }
+

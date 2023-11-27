@@ -53,6 +53,8 @@ import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import com.example.main_project.R
 import com.example.main_project.navigation.HOME_ROUTE
+import com.example.main_project.navigation.REMOTE_EDIT_ROUTE
+import com.example.main_project.navigation.REMOTE_ROUTE
 import com.example.main_project.screens.composable_elements.myshadow
 import com.example.main_project.ui.theme.LexendFont
 
@@ -152,7 +154,11 @@ fun StartScreen(navController: NavHostController,viewModel:MainViewModel){
                             modifier = Modifier
                                 .height(23.dp)
                                 .width(304.dp)
-                                .myshadow(Color.Black.copy(0.7f),offsetX =3.dp , offsetY =2.dp, blurRadius = 1.dp, roundX = 40f, roundY = 40f )
+                                .clickable{
+                                    navController.navigate(REMOTE_ROUTE)
+                                }
+                                .myshadow(Color.Black.copy(0.7f),
+                                    offsetX =3.dp , offsetY =2.dp, blurRadius = 1.dp, roundX = 40f, roundY = 40f )
                                 .align(Alignment.CenterHorizontally),
                             shape = RoundedCornerShape(11.dp),
                             colors = CardDefaults.cardColors(

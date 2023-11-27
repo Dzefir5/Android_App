@@ -5,6 +5,7 @@ import Status
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -119,40 +120,56 @@ fun scaleBitmap(bmp:Bitmap,maxHeight:Int ,maxWidth :Int ):Bitmap{
 //@Preview
 @Composable
 @ExperimentalMaterial3Api
-fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:Context){
+fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:Context,remote:Boolean){
 
     var status by remember {
         mutableStateOf(ViewModel.status)
     }
-
-    ViewModel.ingredientAmount=ViewModel.EditedReceipt.ingredientsList.size
-    ViewModel.stepsAmount=ViewModel.EditedReceipt.stepsList.size
-    var preload :ByteArray = byteArrayOf(0)
-    if( ViewModel.EditedReceipt.imageBmp!="null"){
-        preload=loadFromInternalStorage(ViewModel.EditedReceipt.imageBmp,context)
-    }
-
-    var MainImageUri:Any? by  remember {
-        if(ViewModel.EditedReceipt.imageBmp!="null"){
-            mutableStateOf(preload)
-        }else{
-            mutableStateOf(R.drawable.image_placeholder_01)
+        ViewModel.ingredientAmount=ViewModel.EditedReceipt.ingredientsList.size
+        ViewModel.stepsAmount=ViewModel.EditedReceipt.stepsList.size
+        var preload :ByteArray = byteArrayOf(0)
+        if( ViewModel.EditedReceipt.imageBmp!="null" && !remote){
+            preload=loadFromInternalStorage(ViewModel.EditedReceipt.imageBmp,context)
         }
-    }
-
-    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-            MainImageUri=uri
-            val byteArray=context.contentResolver.openInputStream(MainImageUri.toString().toUri())!!.use { it.readBytes() }
-            var bmp = BitmapFactory.decodeByteArray(byteArray,0,byteArray.size)
-            bmp=scaleBitmap(bmp,720,960)
-            val path:String= UUID.randomUUID().toString()
-            saveImageToInternalStorage(path,bmp,context)
-            ViewModel.EditedReceipt.imageBmp=path
-        } else {
+        var MainImageUri:Any? by  remember {
+            if(ViewModel.EditedReceipt.imageBmp!="null"){
+                mutableStateOf(preload)
+            }else{
+                mutableStateOf(R.drawable.image_placeholder_01)
+            }
+        }
+        val path:String= UUID.randomUUID().toString()
+        val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                MainImageUri=uri
+                val byteArray=context.contentResolver.openInputStream(MainImageUri.toString().toUri())!!.use { it.readBytes() }
+                var bmp = BitmapFactory.decodeByteArray(byteArray,0,byteArray.size)
+                bmp=scaleBitmap(bmp,720,960)
+                saveImageToInternalStorage(path,bmp,context)
+                ViewModel.EditedReceipt.imageBmp=path
+            } else {
                 ////
+            }
+        }
+
+    var Url = remember{mutableStateOf("")}
+    if(remote){
+        val memoryRef = ViewModel.remoteStorage.reference
+            .child("images")
+            .child(ViewModel.EditedReceipt.imageBmp+".jpg")
+        memoryRef.downloadUrl.addOnSuccessListener {
+            Url.value=it.toString()
+            Log.d("Mylog","${Url}")
+        }.addOnFailureListener(){
+            ViewModel.remoteStorage.reference
+                .child("01.png")
+                .downloadUrl.addOnSuccessListener(){
+                    Url.value=it.toString()
+                }
         }
     }
+
+
                     //BackGround
     BackGround()
     Box(
@@ -259,40 +276,51 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
         }
                 //Photo place
         item {
+            val cardmod = Modifier
+                .fillMaxWidth(0.8f)
+                .height(210.dp)
+                .myshadow(
+                    Color.Black.copy(0.5f),
+                    offsetX = 2.dp,
+                    offsetY = 2.dp,
+                    roundY = 50f,
+                    roundX = 50f,
+                    blurRadius = 3.dp
+                )
+
 
             //Image
             Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .height(210.dp)
-                    .clickable {
-                        pickMedia.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly
-                            )
+                modifier = if(remote)cardmod else cardmod.clickable {
+                    pickMedia.launch(
+                        PickVisualMediaRequest(
+                            ActivityResultContracts.PickVisualMedia.ImageOnly
                         )
-                    }
-                    .myshadow(
-                        Color.Black.copy(0.5f),
-                        offsetX = 2.dp,
-                        offsetY = 2.dp,
-                        roundY = 50f,
-                        roundX = 50f,
-                        blurRadius = 3.dp
-                    ),
+                    )
+                },
                 shape= RoundedCornerShape(20.dp),
                 elevation =CardDefaults.elevatedCardElevation(3.dp) ,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             ) {
-                AsyncImage(
-                    modifier = Modifier.fillMaxSize(),
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(MainImageUri)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Main_Image",
-                    contentScale = ContentScale.Crop,
-                )
+                if(!remote){
+                    AsyncImage(
+                        modifier = Modifier.fillMaxSize(),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(MainImageUri)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Main_Image",
+                        contentScale = ContentScale.Crop,
+                    )
+                }else{
+                    AsyncImage(
+                        modifier = Modifier.fillMaxSize(),
+                        model = Url.value,
+                        contentDescription = "Main_Image",
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+
             }
         }
                 //Description
@@ -488,7 +516,7 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                         for(num in 0..(ViewModel.stepsAmount-1))
                         {
                             key(ViewModel.EditedReceipt.stepsList[num]) {
-                                    StepCard(num, ViewModel,context)
+                                    StepCard(num, ViewModel,context, remote)
                             }
                         }
                     }
@@ -554,19 +582,13 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                     .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
                 shape = CircleShape,
                 onClick = {
-
-                            navController.navigate(HOME_ROUTE){
-                                popUpTo(HOME_ROUTE){
-                                    inclusive=true
-                                }
-                            }
+                            navController.popBackStack()
                             if(ViewModel.status!=Status.WATCHING) {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     delay(1000)
                                     ViewModel.EditedReceipt = Receipt_data()
                                     ViewModel.stepsAmount = ViewModel.EditedReceipt.stepsList.size
-                                    ViewModel.ingredientAmount =
-                                        ViewModel.EditedReceipt.ingredientsList.size
+                                    ViewModel.ingredientAmount = ViewModel.EditedReceipt.ingredientsList.size
                                 }
                             }
 
@@ -586,57 +608,59 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                     tint = Color.White
                 )
             }
+            if(!remote){
+                FloatingActionButton(
+                    modifier = Modifier
+                        .size(110.dp)
+                        .offset(x = 10.dp, y = 10.dp)
+                        .myshadow(
+                            MaterialTheme.colorScheme.primary,
+                            blurRadius = 25.dp,
+                            roundY = 200f,
+                            roundX = 200f
+                        )
+                        .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
+                    shape = CircleShape,
+                    onClick = {
 
-            FloatingActionButton(
-                modifier = Modifier
-                    .size(110.dp)
-                    .offset(x = 10.dp, y = 10.dp)
-                    .myshadow(
-                        MaterialTheme.colorScheme.primary,
-                        blurRadius = 25.dp,
-                        roundY = 200f,
-                        roundX = 200f
+                        if(ViewModel.status!=Status.WATCHING){
+                            CoroutineScope(Dispatchers.IO).launch {
+                                if(ViewModel.status==Status.EDITING)ViewModel.updateReceipt(ViewModel.EditedReceipt)
+                                if(ViewModel.status==Status.CREATING){
+                                    ViewModel.addReceipt(ViewModel.EditedReceipt)
+                                    ViewModel.remoteRepository.insertData(ViewModel.EditedReceipt,context)
+                                }
+                                delay(1000)
+                                ViewModel.EditedReceipt = Receipt_data()
+                            }
+                            navController.navigate(HOME_ROUTE) {
+                                popUpTo(HOME_ROUTE) {
+                                    inclusive = true
+                                }
+                            }
+                        }else{
+                            ViewModel.status = Status.EDITING
+                            navController.navigate(EDIT_ROUTE)
+                        }
+
+
+
+                    },
+                    elevation = FloatingActionButtonDefaults.elevation(
+                        defaultElevation = 5.dp,
+                        focusedElevation = 5.dp,
+                        pressedElevation = 2.dp
                     )
-                    .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
-                shape = CircleShape,
-                onClick = {
-
-                    if(ViewModel.status!=Status.WATCHING){
-                        CoroutineScope(Dispatchers.IO).launch {
-                            if(ViewModel.status==Status.EDITING)ViewModel.updateReceipt(ViewModel.EditedReceipt)
-                            if(ViewModel.status==Status.CREATING){
-                                ViewModel.addReceipt(ViewModel.EditedReceipt)
-                                ViewModel.remoteRepository.insertData(ViewModel.EditedReceipt,context)
-                            }
-                            delay(1000)
-                           ViewModel.EditedReceipt = Receipt_data()
-                        }
-                        navController.navigate(HOME_ROUTE) {
-                            popUpTo(HOME_ROUTE) {
-                                inclusive = true
-                            }
-                        }
-                    }else{
-                        ViewModel.status = Status.EDITING
-                        navController.navigate(EDIT_ROUTE)
-                    }
-
-
-
-                },
-                elevation = FloatingActionButtonDefaults.elevation(
-                    defaultElevation = 5.dp,
-                    focusedElevation = 5.dp,
-                    pressedElevation = 2.dp
-                )
-            ) {
-                Icon(
-                    modifier = Modifier.size(if(ViewModel.status!=Status.WATCHING) {75.dp}else{60.dp}),
-                    imageVector = if(ViewModel.status!=Status.WATCHING) {Icons.Rounded.Done}else{Icons.Rounded.Edit},
-                    contentDescription = "save_icon",
-                    tint = Color.White
-                )
+                ) {
+                    Icon(
+                        modifier = Modifier.size(if(ViewModel.status!=Status.WATCHING) {75.dp}else{60.dp}),
+                        imageVector = if(ViewModel.status!=Status.WATCHING) {Icons.Rounded.Done}else{Icons.Rounded.Edit},
+                        contentDescription = "save_icon",
+                        tint = Color.White
+                    )
+                }
             }
+
         }
 
     }
@@ -644,7 +668,7 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
 
 @ExperimentalMaterial3Api
 @Composable
- fun StepCard(number :Int ,ViewModel: MainViewModel,context:Context) {
+ fun StepCard(number :Int ,ViewModel: MainViewModel,context:Context,remote: Boolean) {
     var step_description by remember {
         mutableStateOf("")
     }
@@ -656,7 +680,7 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
     }
 
     var preload :ByteArray
-    if( ViewModel.EditedReceipt.stepsList[number].image!="null"){
+    if( ViewModel.EditedReceipt.stepsList[number].image!="null"&& !remote){
         preload=loadFromInternalStorage(ViewModel.EditedReceipt.stepsList[number].image,context)
     }else{
         preload= byteArrayOf()
@@ -665,19 +689,18 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
     var ImageUri:Any? by  remember {
         if(ViewModel.EditedReceipt.stepsList[number].image!="null"){
             mutableStateOf(preload)
-            //mutableStateOf(R.drawable.dish_icon)
         }else{
             mutableStateOf(R.drawable.image_placeholder_01)
         }
 
     }
+    val path:String= UUID.randomUUID().toString()
     val pickMediaStep = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             ImageUri=uri
             val byteArray=context.contentResolver.openInputStream(ImageUri.toString().toUri())!!.use { it.readBytes() }
             var bmp = BitmapFactory.decodeByteArray(byteArray,0,byteArray.size)
             bmp= scaleBitmap(bmp,480,640)
-            val path:String= UUID.randomUUID().toString()
             saveImageToInternalStorage(path,bmp,context)
             ViewModel.EditedReceipt.stepsList[number].image= path
             // Log.d("PhotoPicker", "Selected URI: $uri")
@@ -686,6 +709,22 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
         }
     }
 
+    var Url = remember{mutableStateOf("")}
+    if(remote){
+        val memoryRef = ViewModel.remoteStorage.reference
+            .child("images")
+            .child(ViewModel.EditedReceipt.stepsList[number].image+".jpg")
+        memoryRef.downloadUrl.addOnSuccessListener {
+            Url.value=it.toString()
+            Log.d("Mylog","${Url}")
+        }.addOnFailureListener(){
+            ViewModel.remoteStorage.reference
+                .child("01.png")
+                .downloadUrl.addOnSuccessListener(){
+                    Url.value=it.toString()
+                }
+        }
+    }
 
 
     AnimatedVisibility(
@@ -758,8 +797,7 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                                                 while (animationState.isIdle == false) {
                                                 }
                                                 ViewModel.EditedReceipt.stepsList.removeAt(number)
-                                                ViewModel.stepsAmount =
-                                                    ViewModel.EditedReceipt.stepsList.size
+                                                ViewModel.stepsAmount = ViewModel.EditedReceipt.stepsList.size
                                             }
 
                                         },
@@ -782,11 +820,12 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                             }
 
                         }
+                        val cardmod = Modifier
+                            .width(250.dp)
+                            .height(200.dp)
+                            .padding(10.dp)
                         Card(
-                            modifier = Modifier
-                                .width(250.dp)
-                                .height(200.dp)
-                                .padding(10.dp)
+                            modifier = if(remote)cardmod else cardmod
                                 .clickable {
                                     pickMediaStep.launch(
                                         PickVisualMediaRequest(
@@ -798,15 +837,24 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                             elevation = CardDefaults.elevatedCardElevation(3.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                         ) {
-                            AsyncImage(
-                                modifier = Modifier.fillMaxSize(),
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(ImageUri)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = "Image",
-                                contentScale = ContentScale.Crop
-                            )
+                            if(!remote){
+                                AsyncImage(
+                                    modifier = Modifier.fillMaxSize(),
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(ImageUri)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "Main_Image",
+                                    contentScale = ContentScale.Crop,
+                                )
+                            }else{
+                                AsyncImage(
+                                    modifier = Modifier.fillMaxSize(),
+                                    model = Url.value,
+                                    contentDescription = "Main_Image",
+                                    contentScale = ContentScale.Crop,
+                                )
+                            }
                         }
                     }
                     Card(

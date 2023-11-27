@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.sql.Blob
 import java.util.UUID
 
@@ -35,22 +36,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application){
     var search by mutableStateOf(false)
     var searchString by mutableStateOf("")
 
-
-    var remoteDatabase = Firebase.firestore
-    //val remoteStorage = Firebase.storage.getReference("gs://main-project-fe50b.appspot.com")
-
     val repository:LocalRepository
+    var remoteDatabase = Firebase.firestore
+    var remoteStorage = Firebase.storage
     lateinit var remoteRepository:RemoteRepository
+    val StorageBaseUrl = "gs://main-project-fe50b.appspot.com/"
 
     var getAllData: Flow<List<Receipt_data>>
     var getSearchData: Flow<List<Receipt_data>>
+    var getRemoteData: Flow<List<Receipt_data>>
     init{
         //remoteRepository=RemoteRepository(remoteDatabase)
         val userDao = MainDataBase.createDataBase(application).dao
          repository = LocalRepository(userDao)
-         remoteRepository= RemoteRepository(remoteDatabase,Firebase.storage)
+         remoteRepository= RemoteRepository(remoteDatabase,remoteStorage)
          getAllData = repository.getAll()
         getSearchData = repository.getSearch(searchString)
+        getRemoteData=remoteRepository.fetchAllData()
     }
     fun addReceipt(receiptData: Receipt_data){
         viewModelScope.launch(Dispatchers.IO) {
@@ -84,11 +86,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application){
             repository.deleteData(receiptData)
         }
     }
+    fun saveToLocalDatabase(receiptData: Receipt_data){
+        viewModelScope.launch(Dispatchers.IO) {
+            val imageRef =remoteStorage.reference.child("images").child(receiptData.name)
+            val localFile = File.createTempFile(receiptData.imageBmp, "jpg")
+            imageRef.getFile(localFile).addOnSuccessListener {
 
+            }.addOnFailureListener {}
+            receiptData.stepsList.forEach {
+                val imageRef =remoteStorage.reference.child("images").child(it.image)
+                val localFile = File.createTempFile(it.image, "jpg")
+                imageRef.getFile(localFile).addOnSuccessListener {
+
+                }.addOnFailureListener {}
+            }
+            addReceipt(receiptData)
+        }
+
+    }
     var Step = Receipt_step()
     var EditedReceipt by mutableStateOf( Receipt_data())
     var ingredientAmount by mutableStateOf(0)
     var stepsAmount by mutableStateOf(0)
+
 
 
 }
