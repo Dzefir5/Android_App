@@ -628,7 +628,7 @@ fun CreationScreen(navController: NavController,ViewModel:MainViewModel,context:
                                 if(ViewModel.status==Status.EDITING)ViewModel.updateReceipt(ViewModel.EditedReceipt)
                                 if(ViewModel.status==Status.CREATING){
                                     ViewModel.addReceipt(ViewModel.EditedReceipt)
-                                    ViewModel.remoteRepository.insertData(ViewModel.EditedReceipt,context)
+                                    //ViewModel.remoteRepository.insertData(ViewModel.EditedReceipt,context)
                                 }
                                 delay(1000)
                                 ViewModel.EditedReceipt = Receipt_data()

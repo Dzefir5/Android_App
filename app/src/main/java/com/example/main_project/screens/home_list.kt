@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.main_project.data.Receipt_data
 import com.example.main_project.data.Receipt_step
+import com.example.main_project.navigation.CHOOSE_ROUTE
 import com.example.main_project.navigation.EDIT_ROUTE
 import com.example.main_project.screens.composable_elements.BackGround
 import com.example.main_project.screens.composable_elements.myshadow
@@ -84,7 +85,7 @@ fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel,context:
         Card(
             modifier = Modifier
                 .height(60.dp)
-               // .shadow(5.dp, spotColor = Color.Black,shape =RoundedCornerShape(0.dp,0.dp,20.dp,20.dp) )
+                // .shadow(5.dp, spotColor = Color.Black,shape =RoundedCornerShape(0.dp,0.dp,20.dp,20.dp) )
                 .fillMaxWidth()
                 .align(alignment = Alignment.CenterHorizontally),
             shape = RoundedCornerShape(0.dp,0.dp,20.dp,20.dp),
@@ -240,12 +241,7 @@ fun HomeScreen(navController: NavHostController,ViewModel:MainViewModel,context:
                     .border(width = 2.dp, Color.White.copy(0.2f), CircleShape),
                 shape = CircleShape,
                 onClick = {
-                    navController.navigate(EDIT_ROUTE)
-                    ViewModel.EditedReceipt= Receipt_data()
-                    ViewModel.stepsAmount=0
-                    ViewModel.ingredientAmount=0
-                    ViewModel.status=Status.CREATING
-
+                    navController.navigate(CHOOSE_ROUTE)
                 },
                 elevation = FloatingActionButtonDefaults.elevation(
                     defaultElevation = 5.dp,

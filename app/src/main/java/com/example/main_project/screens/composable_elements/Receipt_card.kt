@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -53,6 +54,7 @@ import com.example.main_project.R
 import com.example.main_project.data.Receipt_data
 import com.example.main_project.loadFromInternalStorage
 import com.example.main_project.navigation.EDIT_ROUTE
+import com.example.main_project.navigation.HOME_ROUTE
 import com.example.main_project.navigation.REMOTE_EDIT_ROUTE
 import com.example.main_project.ui.theme.LexendFont
 import kotlinx.coroutines.CoroutineScope
@@ -182,13 +184,31 @@ fun receiptCard(ViewModel:MainViewModel, receipt:Receipt_data,navController: Nav
                     .fillMaxSize()
                     .padding(start = 0.dp, end = 0.dp, top = 8.dp, bottom = 4.dp)
             ) {
+
                 Card(
                     modifier = Modifier
                         .size(80.dp)
-                        .align(alignment = Alignment.CenterHorizontally),
+                        .align(alignment = Alignment.CenterHorizontally)
+                        .clickable {
+                            ViewModel.remoteRepository.insertData(receipt ,context)
+                        },
                     shape = RoundedCornerShape(15.dp),
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
-                ) {}
+                    colors = if(remote){
+                        CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer.copy(0f))
+                    }else{
+                        CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
+                    }
+                ) {
+                    if(!remote){
+                        Icon(
+                            modifier = Modifier.fillMaxSize().padding(10.dp),
+                            imageVector = Icons.Rounded.Send,
+                            contentDescription = "send_icon",
+                            tint = Color.White
+                        )
+                    }
+
+                }
                 if(!remote){
                     Row(
                         modifier = Modifier
@@ -263,7 +283,8 @@ fun receiptCard(ViewModel:MainViewModel, receipt:Receipt_data,navController: Nav
                             modifier = Modifier
                                 .size(50.dp)
                                 .clickable {
-                                    ViewModel.saveToLocalDatabase(receipt)
+                                        navController.navigate(HOME_ROUTE)
+                                        ViewModel.saveToLocalDatabase(receipt)
                                 },
                             shape = CircleShape,
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)

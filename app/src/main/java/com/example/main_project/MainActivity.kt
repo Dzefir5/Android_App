@@ -16,6 +16,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
 import com.example.main_project.data.Receipt_data
 import com.example.main_project.navigation.NavigationGraph
+import com.example.main_project.screens.ChooseScreen
+import com.example.main_project.screens.CreationScreen
 import com.example.main_project.screens.fromBmp
 import com.example.main_project.ui.theme.MainTheme
 import com.google.firebase.Firebase
@@ -52,8 +54,8 @@ class MainActivity : ComponentActivity() {
             this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             MainTheme {
                 val NavController = rememberNavController()
+                //ChooseScreen()
                 NavigationGraph(NavController,mainViewModel, applicationContext)
-               // CreationScreen()
             }
             //this.setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
         }

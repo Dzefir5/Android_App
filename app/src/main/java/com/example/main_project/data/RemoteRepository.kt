@@ -41,8 +41,6 @@ class RemoteRepository(private val remoteDataBase:FirebaseFirestore,private val 
                 .map {
                     it.toObjects<Receipt_data>()
                 }
-   // fun updateData(receiptData: Receipt_data) =remoteDataBase.child("receipts_01").updateChildren(mapOf<String,Receipt_data>(receiptData.receiptId.toString() to receiptData) )
-
     fun deleteData(receiptData: Receipt_data) {
         remoteStorage.reference.child("images").child(receiptData.imageBmp+".jpg").delete()
         receiptData.stepsList.forEach(){

@@ -154,9 +154,6 @@ fun StartScreen(navController: NavHostController,viewModel:MainViewModel){
                             modifier = Modifier
                                 .height(23.dp)
                                 .width(304.dp)
-                                .clickable{
-                                    navController.navigate(REMOTE_ROUTE)
-                                }
                                 .myshadow(Color.Black.copy(0.7f),
                                     offsetX =3.dp , offsetY =2.dp, blurRadius = 1.dp, roundX = 40f, roundY = 40f )
                                 .align(Alignment.CenterHorizontally),

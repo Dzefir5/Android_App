@@ -16,6 +16,7 @@ import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.main_project.screens.ChooseScreen
 import com.example.main_project.screens.CreationScreen
 import com.example.main_project.screens.HomeScreen
 import com.example.main_project.screens.StartScreen
@@ -63,9 +64,17 @@ fun NavigationGraph(navController: NavHostController,viewModel:MainViewModel,inc
             HomeScreen(navController,viewModel,incontext,true)
         }
         composable(
-            route= CHOOSE_ROUTE
+            route= CHOOSE_ROUTE,
+            enterTransition ={
+                fadeIn(animationSpec = tween(1500))+
+                        slideInVertically (animationSpec = tween(1500), initialOffsetY = {it})
+            },
+            exitTransition ={
+                fadeOut(animationSpec = tween(1500))+
+                        slideOutVertically (animationSpec = tween(1500), targetOffsetY = {it})
+            }
         ) {
-
+            ChooseScreen(viewModel,navController)
         }
         composable(
             route= EDIT_ROUTE,
